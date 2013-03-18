@@ -9,7 +9,7 @@ open(Id, Nodes) ->
         {take, Master} ->
             Refs = requests(Id, Nodes),
             wait(Id, Nodes, Master, Refs, []);
-        {request, From,  Ref} ->
+        {request, From,  Ref, _} ->
             From ! {ok, Ref},
             open(Id, Nodes);
         stop -> ok
