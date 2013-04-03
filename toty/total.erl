@@ -14,29 +14,28 @@ server(Master, NextPrp, MaxAgr, Nodes, Cast, Queue, Jitter) ->
 	receive
 		{send, Msg} ->
 			Ref = make_ref(),
-			request(... , ... , ... , ...),
-			NewCast = cast(... , ... , ...),
-			server(... , ... , ... , ... , ... , ... , ...);
+			request(Ref, Msg, Nodes, Jitter),
+			NewCast = cast(Ref, Nodes, Cast),
+			server(Master, NextPrp, MaxAgr, Nodes, NewCast, Queue, Jitter);
 		{request, From, Ref, Msg} ->
-			From ! {proposal, ... , ...},
-			NewQueue = insert(... , ... , ... , ...),
-			NewNextPrp = seq:increment(seq:max(... , ...)),
-			server(... , ... , ... , ... , ... , ... , ...);
+			From ! {proposal, Ref, NextPrp},
+			NewQueue = insert(Ref, Msg,  NextPrp, Queue),
+			NewNextPrp = seq:increment(seq:max(NextPrp, MaxAgr)),
+			server(Master, NewNextPrp, MaxAgr, Nodes, Cast, NewQueue, Jitter);
 		{proposal, Ref, Proposal} ->
-			case proposal(... , ... , ...) of
+			case proposal(Ref, Proposal, Cast) of
 				{agreed, MaxSeq, NewCast} ->
-					agree(... , ... , ...),
-
-					server(... , ... , ... , ... , ... , ... , ...);
+					agree(Ref , MaxSeq, Nodes),
+					server(Master, NextPrp, MaxSeq, Nodes, NewCast, Queue, Jitter);
 				NewCast ->
-					server(... , ... , ... , ... , ... , ... , ...)
+					server(Master, NextPrp, MaxAgr, Nodes, NewCast, Queue, Jitter)
 				end;		
 		{agreed, Ref, Seq} ->
-			Updated = update(... , ... , ...),
-			{Agreed, NewQueue} = agreed(...),
-			deliver(... , ...),
-			NewMaxAgr = seq:max(... , ...),
-			server(... , ... , ... , ... , ... , ... , ...);
+			Updated = update(Ref, Seq, Queue),
+			{Agreed, NewQueue} = agreed(Updated),
+			deliver(Master, Agreed),
+			NewMaxAgr = seq:max(Seq, MaxAgr),
+			server(Master, NextPrp, NewMaxAgr, Nodes, Cast, NewQueue, Jitter);
 		stop ->
 			ok
 	end.	
