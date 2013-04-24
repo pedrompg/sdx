@@ -24,12 +24,16 @@ init(Id, Grp, Master) ->
 leader(Id, Master, Peers) ->
 	receive
 		{mcast, Msg} ->
-			bcast(Id, ..., ...), %% TODO: COMPLETE
-		%% TODO: ADD SOME CODE
+			bcast(Id, {msg, Msg}, Peers), %% TODO: COMPLETE
+			%% TODO: ADD SOME CODE
+			Master ! {deliver, Msg},			
+			%%-------------------%% 
 			leader(Id, Master, Peers);
 		{join, Peer} ->
-		%% TODO: ADD SOME CODE
-			joining(Id, ..., ..., ...); %% TODO: COMPLETE
+			%% TODO: ADD SOME CODE
+			Master ! request,
+			%%-------------------%% 
+			joining(Id, Master, Peer, Peers); %% TODO: COMPLETE
 		stop ->
 			ok;
 		Error ->
@@ -45,6 +49,32 @@ joining(Id, Master, Peer, Peers) ->
 		stop ->
 			ok
 	end.
+	
+slave(Id, Master, Leader, Peers) ->
+	receive
+		{mcast, Msg} ->
+			%% TODO: ADD SOME CODE
+			Leader ! {mcast, Msg},
+			%%-------------------%% 
+			slave(Id, Master, Leader, Peers);
+		{join, Peer} ->
+			%% TODO: ADD SOME CODE
+			Leader ! {join, Peer},
+			%%-------------------%% 
+			slave(Id, Master, Leader, Peers);
+		{msg, Msg} ->
+			%% TODO: ADD SOME CODE
+			Master ! {deliver, Msg},
+			%%-------------------%% 
+			slave(Id, Master, Leader, Peers);
+		{view, _, _, View} ->
+			slave(Id, Master, Leader, View);
+		stop ->
+			ok;
+		Error ->
+			io:format("slave ~w: strange message ~w~n", [Id, Error])
+	end.
+
 
 bcast(_, Msg, Nodes) ->
 	lists:foreach(fun(Node) -> Node ! Msg end, Nodes).

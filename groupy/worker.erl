@@ -35,9 +35,9 @@ worker(Id, Cast, Color, Gui, Sleep) ->
 	Wait = if Sleep == 0 -> 0; true -> random:uniform(Sleep) end,
 	receive
 		{deliver, {_From, N}} ->
-		Color2 = change_color(N, Color),
-		Gui ! {color, Color2},
-		worker(Id, Cast, Color2, Gui, Sleep);
+			Color2 = change_color(N, Color),
+			Gui ! {color, Color2},
+			worker(Id, Cast, Color2, Gui, Sleep);
 		{join, Peer} ->
 			Cast ! {join, Peer},
 			worker(Id, Cast, Color, Gui, Sleep);
@@ -55,4 +55,4 @@ worker(Id, Cast, Color, Gui, Sleep) ->
 	end.
 
 change_color(N, {R,G,B}) ->
-{G, B, ((R+N) rem 256)}.
+	{G, B, ((R+N) rem 256)}.
