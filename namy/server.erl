@@ -25,6 +25,7 @@ server(Entries, TTL) ->
 		{request, From, Req}->
 			io:format("Server: received request to solve [~w]~n", [Req]),
 			Reply = entry:lookup(Req, Entries),
+			io:format("Server Line 28: From ~w Reply ~w TTL ~w ~n", [From, Reply, TTL]),
 			From ! {reply, Reply, TTL},
 			server(Entries, TTL);
 		{register, Name, Entry} ->

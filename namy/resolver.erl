@@ -17,8 +17,9 @@ init(Root) ->
 resolver(Cache) ->
 	receive
 		{request, From, Req}->
-			io:format("Resolver: request from ~w to solve ~w~n", [From, Req]),
+			io:format("Line 20 - Resolver: request from ~w to solve ~w~n", [From, Req]),
 			{Reply, Updated} = resolve(Req, Cache),
+			io:format("Line 22 - resolver From ~w Reply ~w~n",[From, Reply]),
 			From ! {reply, Reply},
 			resolver(Updated);
 		status ->
@@ -48,20 +49,22 @@ resolve(Name, Cache)->
 	end.
 
 recursive([Name|Domain], Cache) ->
-	io:format("Recursive ~w: ", [Domain]),
+	io:format("Recursive - Name ~w Domain ~w Cache ~w: ~n", [Name,Domain,Cache]),
 	case resolve(Domain, Cache) of
 		{unknown, Updated} ->
 			io:format("unknown ~n", []),
 			{unknown, Updated};
 		{{domain, Srv}, Updated} ->
 			Srv ! {request, self(), Name},
-			io:format("Resolver: sent request to solve [~w] to ~w~n", [Name, Srv]),
-		receive
-			{reply, unknown, _} ->
-				{unknown, Updated};
-			{reply, Reply, TTL} ->
-				Expire = time:add(time:now(), TTL),
-				NewCache = cache:add([Name|Domain], Expire, Reply, Updated),
-				{Reply, NewCache}
-		end
+			io:format("Line 58 - Resolver: sent request to solve [~w] to ~w~n", [Name, Srv]),
+			receive
+				{reply, unknown, _} ->
+					{unknown, Updated};
+				{reply, Reply, TTL} ->
+					io:format("Line 64 - Reply ~w TTL ~w~n",[Reply, TTL]),
+					Expire = time:add(time:now(), TTL),
+					NewCache = cache:add([Name|Domain], Expire, Reply, Updated),
+					io:format("Line 67 - recursive end reply ~w cache ~w~n",[Reply, Cache]),
+					{Reply, NewCache}
+			end
 	end.
