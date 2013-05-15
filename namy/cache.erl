@@ -4,7 +4,7 @@
 lookup(Name, Cache) ->
 	case lists:keyfind(Name, 1, Cache) of
 		{_, Expire, Id} ->
-			io:format("Cache - Line 7: Name ~w Expire ~w Id ~w~n", [Name, Expire, Id]),
+			%%io:format("Cache - Line 7: Name ~w Expire ~w Id ~w~n", [Name, Expire, Id]),
 			case time:valid(Expire, time:now()) of 
 				true ->
 					{ok, Id};
@@ -18,10 +18,9 @@ lookup(Name, Cache) ->
 new() ->
 	[].
 
-add(NameDomain, Expire, Reply, Cache) ->
- 	{_,Id} = Reply,
- 	T = {NameDomain, Expire, Id},
- 	io:format("Cache - Line 22: NameDomain ~w Expire ~w Id ~w~n", [NameDomain, Expire, Id]),
+add(NameDomain, Expire, Reply, Cache) ->	
+ 	T = {NameDomain, Expire, Reply},
+ 	%%io:format("Cache - Line 22: NameDomain ~w Expire ~w Id ~w~n", [NameDomain, Expire, Reply]),
 	lists:keystore(NameDomain, 1, Cache, T).
 
 remove(Name, Cache) ->
